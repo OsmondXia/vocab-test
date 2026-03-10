@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>英语五年级单元词汇自测</title>
+  <style>
+    :root {
+      --bg-main: #1e1e1e;
+      --bg-panel: #2d2d2d;
+      --border-subtle: rgba(255, 255, 255, 0.1);
+      --text-primary: #e4e4e7;
+      --text-secondary: #a1a1aa;
+      --accent: #0078d4;
+      --accent-hover: #106ebe;
+      --success: #107c10;
+      --error: #d13438;
+      --warning: #ffb900;
+      --radius: 8px;
+      --space-xs: 8px;
+      --space-sm: 12px;
+      --space-md: 16px;
+      --space-lg: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-main);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: var(--space-lg) var(--space-md);
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: var(--space-lg);
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius);
+      padding: var(--space-lg);
+    }
+
+    .unit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+
+    .unit-btn {
+      padding: var(--space-md);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-subtle);
+      background: #18181b;
+      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+
+    .unit-btn span {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .unit-btn:hover {
+      background: #27272f;
+      border-color: var(--accent);
+    }
+
+    .unit-btn:active {
+      transform: scale(0.97);
+    }
+
+    .label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xs);
+    }
+
+    .chinese {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: var(--space-md);
+    }
+
+    .progress {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xs);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      font-size: 16px;
+      padding: var(--space-md);
+      border-radius: var(--radius);
+      background: #27272f;
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: var(--space-md);
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.25);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-sm);
+    }
+
+    button {
+      flex: 1;
+      font-size: 14px;
+      padding: var(--space-md);
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, opacity 0.1s;
+    }
+
+    button:active {
+      opacity: 0.85;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border-color: var(--border-subtle);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+    }
+
+    .btn-danger {
+      background: var(--error);
+      border-color: var(--error);
+      color: #fff;
+    }
+
+    .result {
+      font-size: 14px;
+      margin-top: var(--space-xs);
+      min-height: 20px;
+    }
+
+    .result.correct {
+      color: var(--success);
+    }
+
+    .result.wrong {
+      color: var(--error);
+    }
+
+    .score {
+      font-size: 40px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: var(--space-md);
+    }
+
+    .score-label {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-lg);
+    }
+
+    .wrong-list {
+      margin-top: var(--space-md);
+      font-size: 14px;
+    }
+
+    .wrong-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+
+    .wrong-item span.en {
+      font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    }
+
+    .pill {
+      display: inline-block;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-sm);
+    }
+
+    /* Frame: header with logo block */
+    .frame-header {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+    }
+
+    .logo-block {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      background: #1e3a5f;
+      border-radius: 6px;
+    }
+
+    .frame-title-wrap {
+      flex: 1;
+    }
+
+    .frame-title-zh {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+
+    .frame-title-en {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .vocab-overview {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-lg);
+    }
+
+    .vocab-overview .intro {
+      margin-bottom: var(--space-sm);
+    }
+
+    .unit-prompt {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: var(--space-md);
+    }
+
+    .unit-list {
+      list-style: none;
+      padding-left: 14px;
+      border-left: 1px solid rgba(255, 255, 255, 0.25);
+      margin-left: 10px;
+    }
+
+    .unit-list li {
+      position: relative;
+      padding: 10px 0 10px 28px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .unit-list li::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .unit-list li:hover {
+      color: var(--accent);
+    }
+
+    /* Frame1: test page */
+    .test-header {
+      text-align: center;
+      margin-bottom: var(--space-lg);
+    }
+
+    .test-header .unit-en {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .test-header .unit-zh {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .test-chinese {
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: var(--space-md);
+    }
+
+    .test-input-wrap {
+      margin-bottom: var(--space-md);
+    }
+
+    .test-confirm {
+      display: block;
+      width: 55%;
+      max-width: 180px;
+      margin: 0 auto;
+      padding: var(--space-md);
+      font-size: 15px;
+      background: var(--success);
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .test-confirm:hover {
+      opacity: 0.9;
+    }
+
+    .test-stats {
+      margin-top: var(--space-lg);
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+
+    /* Frame2: result page */
+    .result-header {
+      text-align: center;
+      margin-bottom: var(--space-lg);
+    }
+
+    .result-header .unit-en {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .result-header .unit-zh {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .result-summary {
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: var(--space-lg);
+    }
+
+    .result-score-label {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: var(--space-xs);
+    }
+
+    .result-score-value {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: var(--space-lg);
+    }
+
+    .result-wrong-label {
+      font-size: 14px;
+      margin-bottom: var(--space-sm);
+    }
+
+    .result-wrong-words {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-lg);
+    }
+
+    .result-wrong-words.empty-msg {
+      color: var(--success);
+    }
+
+    .btn-home {
+      width: 100%;
+      padding: var(--space-md);
+      font-size: 16px;
+      background: var(--success);
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .btn-home:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="frame" class="screen active">
+      <div class="frame-header">
+        <div class="logo-block"></div>
+        <div class="frame-title-wrap">
+          <h1 class="frame-title-zh">英语五年级下学期单元词汇自测</h1>
+          <p class="frame-title-en">English Course Grade Five Multi-Units Vocabulary Self-Testing Program</p>
+        </div>
+      </div>
+      <div class="vocab-overview">
+        <p class="intro">本学期共 108 个单词。主要生活场景（覆盖面）：</p>
+        <p>个人与校园生活：身份（ID）、获胜、日期（February，March，June，yesterday）、操场、图书馆、考试/难题（difficulty）等。</p>
+        <p>休闲与假期：假期、夏令营、滑雪、营地、电影、吉他、ukulele 等爱好与娱乐。</p>
+        <p>家庭与居家环境：女儿、护理院、山丘、河流、灯、枕头、镜子、冰箱、丝绸、画、洞穴等。</p>
+        <p>旅行与地理：旅行、旅程、西方、民族、英国的、北方等。</p>
+        <p>文学与故事类型：历史、推理/侦探故事、科幻小说、幻想作品、冒险故事、侦探、监狱等。</p>
+        <p>安全与情绪：摔倒、救、保护、杀死、击败、惊喜、秘密、英雄、心、志愿者等。</p>
+        <p>饮食与消费：午餐时间、吃饱、奶酪、汉堡包、茶馆、硬币、昂贵、百万、钢等。</p>
+      </div>
+      <p class="unit-prompt">选择你要尝试默写的单元</p>
+      <ul class="unit-list">
+        <li data-unit="1">Unit One</li>
+        <li data-unit="2">Unit Two</li>
+        <li data-unit="3">Unit Three</li>
+        <li data-unit="4">Unit Four</li>
+        <li data-unit="5">Unit Five</li>
+        <li data-unit="6">Unit Six</li>
+      </ul>
+    </div>
+
+    <div id="frame1" class="screen">
+      <div class="test-header">
+        <div class="unit-en" id="testUnitEn">Unit One</div>
+        <div class="unit-zh" id="testUnitZh">第一单元单元测试</div>
+      </div>
+      <div class="card">
+        <div class="test-chinese" id="chineseText"></div>
+        <div class="test-input-wrap">
+          <input id="answerInput" type="text" autocomplete="off" placeholder="请输入对应的英文单词">
+        </div>
+        <button id="confirmBtn" class="test-confirm">确认</button>
+        <div class="result" id="resultText"></div>
+        <div class="test-stats" id="testStats">
+          <div>累计正确 <span id="statCorrect">0</span> 个</div>
+          <div>累计错误 <span id="statWrong">0</span> 个</div>
+          <div>正确率<span id="statRate">100</span>%</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="frame2" class="screen">
+      <div class="result-header">
+        <div class="unit-en" id="resultUnitEn">Unit One</div>
+        <div class="unit-zh" id="resultUnitZh">第一单元单元测试 测试结果</div>
+      </div>
+      <div class="card">
+        <div class="result-summary">
+          <div>累计正确 <span id="resCorrect">0</span> 个</div>
+          <div>累计错误 <span id="resWrong">0</span> 个</div>
+        </div>
+        <div class="result-score-label">最终得分</div>
+        <div class="result-score-value" id="scoreValue">100分</div>
+        <div class="result-wrong-label">错误单词包括:</div>
+        <div class="result-wrong-words" id="wrongList">xxx, xxx, xxx, xxx, xxx, xxx</div>
+        <button id="homeBtn" class="btn-home">返回首页</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const VOCAB = {
+      1: [
+        { en: "ID", zh: "身份证明" },
+        { en: "pay", zh: "付款;付钱给(某人)" },
+        { en: "ride", zh: "骑,骑自行车" },
+        { en: "could", zh: "能,会,可以" },
+        { en: "holiday", zh: "假期" },
+        { en: "skier", zh: "滑雪者" },
+        { en: "camp", zh: "活动营地,度假营地" },
+        { en: "summer camp", zh: "夏令营" },
+        { en: "training", zh: "训练,培训" },
+        { en: "third", zh: "第三的" },
+        { en: "mean", zh: "意思是,表示……的意思" },
+        { en: "fall", zh: "摔倒,跌倒" },
+        { en: "film", zh: "电影,影片" },
+        { en: "kill", zh: "弄死,杀死" },
+        { en: "beat", zh: "击败,打败,战胜" },
+        { en: "difficulty", zh: "难题,难事" },
+        { en: "guitar", zh: "吉他" },
+        { en: "lunchtime", zh: "午餐时间" },
+        { en: "full", zh: "吃饱了的" },
+        { en: "become", zh: "成为,变成" },
+        { en: "second", zh: "第二的" },
+        { en: "most", zh: "最多,最大程度地" },
+        { en: "hero", zh: "英雄" },
+        { en: "heart", zh: "心,内心;感情" },
+        { en: "volunteer", zh: "自愿(做某事);志愿者" }
+      ],
+      2: [
+        { en: "winner", zh: "获胜者,获胜的人" },
+        { en: "hill", zh: "小山,小丘,山冈" },
+        { en: "June", zh: "六月" },
+        { en: "yesterday", zh: "在昨天,在昨日;昨天" },
+        { en: "playground", zh: "操场,运动场" },
+        { en: "care home", zh: "护理院" },
+        { en: "poem", zh: "诗;韵文" },
+        { en: "playful", zh: "活泼的;爱玩的" },
+        { en: "side", zh: "一侧,身边,旁边" },
+        { en: "someone", zh: "某人,有人" },
+        { en: "ukulele", zh: "尤克里里琴" }
+      ],
+      3: [
+        { en: "adventure", zh: "历险(经历);奇遇" },
+        { en: "history", zh: "历史" },
+        { en: "mystery", zh: "悬疑(推理,侦探)故事" },
+        { en: "science fiction", zh: "科幻小说" },
+        { en: "fantasy", zh: "幻想作品" },
+        { en: "journey", zh: "旅行,旅程" },
+        { en: "west", zh: "西,西面" },
+        { en: "thousand", zh: "一千" },
+        { en: "nation", zh: "民族" },
+        { en: "horseback", zh: "马背" },
+        { en: "horse", zh: "马" },
+        { en: "librarian", zh: "图书馆管理员;图书馆馆长" },
+        { en: "secret", zh: "秘密的,隐秘的" },
+        { en: "title", zh: "书名;题目,标题" },
+        { en: "cousin", zh: "堂(表)兄弟;堂(表)姐妹" },
+        { en: "friendly", zh: "友好的,友善的" },
+        { en: "nature", zh: "大自然,自然界" },
+        { en: "would", zh: "愿意;要(表示礼貌地要求或建议)" },
+        { en: "pair", zh: "两个人,一对" },
+        { en: "building", zh: "建筑物;楼房,房子,楼宇" },
+        { en: "air", zh: "空中,天空" },
+        { en: "British", zh: "英国的;英国人的" }
+      ],
+      4: [
+        { en: "lamp", zh: "灯" },
+        { en: "pot", zh: "陶制容器" },
+        { en: "pillow", zh: "枕头" },
+        { en: "mirror", zh: "镜子" },
+        { en: "icebox", zh: "冰箱" },
+        { en: "ancient", zh: "古代的" },
+        { en: "ago", zh: "以前" },
+        { en: "central", zh: "中部的" },
+        { en: "silk", zh: "丝绸" },
+        { en: "really", zh: "真的吗;是吗(表示感兴趣或惊讶)" },
+        { en: "February", zh: "二月" },
+        { en: "expensive", zh: "昂贵的,花钱多的" },
+        { en: "March", zh: "三月" },
+        { en: "river", zh: "江,河" },
+        { en: "quickly", zh: "快速地" },
+        { en: "pull", zh: "拉;扯;拖" },
+        { en: "hole", zh: "洞,孔,坑" },
+        { en: "cheese", zh: "干酪,奶酪" },
+        { en: "daughter", zh: "女儿" },
+        { en: "choice", zh: "选择;选择权" },
+        { en: "save", zh: "救,拯救,挽救" },
+        { en: "protect", zh: "保护;防护" },
+        { en: "voice", zh: "意见,呼声;嗓音" },
+        { en: "painting", zh: "绘画(作品)" },
+        { en: "cave", zh: "洞穴,山洞,岩洞" },
+        { en: "solve", zh: "解决(问题)" }
+      ],
+      5: [
+        { en: "coin", zh: "硬币" },
+        { en: "strange", zh: "奇怪的,不寻常的" },
+        { en: "carefully", zh: "小心地,仔细地" },
+        { en: "its", zh: "它的" },
+        { en: "detective", zh: "侦探,警探" },
+        { en: "prison", zh: "监狱;看守所,拘留所" },
+        { en: "steal", zh: "偷,窃取" },
+        { en: "jewel", zh: "珠宝首饰" },
+        { en: "shiny", zh: "光滑发亮的,有光泽的" },
+        { en: "aha", zh: "啊哈(表示明白或意识到某事)" },
+        { en: "message", zh: "消息;信息" },
+        { en: "another", zh: "另一个的,别的,不同的" },
+        { en: "north", zh: "向北,朝北" }
+      ],
+      6: [
+        { en: "high-speed", zh: "高速的,快速的" },
+        { en: "surprise", zh: "意想不到的事;不同寻常的事" },
+        { en: "hamburger", zh: "汉堡包" },
+        { en: "share", zh: "共享" },
+        { en: "teahouse", zh: "茶馆,茶楼,茶室" },
+        { en: "break", zh: "使骨折" },
+        { en: "million", zh: "百万" },
+        { en: "climb", zh: "(手脚并用地)攀登,爬" },
+        { en: "ladder", zh: "梯子" },
+        { en: "steel", zh: "钢,钢铁" }
+      ]
+    };
+
+    let currentUnit = null;
+    let wordList = [];
+    let currentIndex = 0;
+    let correctCount = 0;
+    let wrongWords = [];
+
+    const frameHome = document.getElementById("frame");
+    const frameTest = document.getElementById("frame1");
+    const frameResult = document.getElementById("frame2");
+
+    const testUnitEn = document.getElementById("testUnitEn");
+    const testUnitZh = document.getElementById("testUnitZh");
+    const chineseText = document.getElementById("chineseText");
+    const answerInput = document.getElementById("answerInput");
+    const resultText = document.getElementById("resultText");
+    const statCorrect = document.getElementById("statCorrect");
+    const statWrong = document.getElementById("statWrong");
+    const statRate = document.getElementById("statRate");
+
+    const resultUnitEn = document.getElementById("resultUnitEn");
+    const resultUnitZh = document.getElementById("resultUnitZh");
+    const resCorrect = document.getElementById("resCorrect");
+    const resWrong = document.getElementById("resWrong");
+    const scoreValue = document.getElementById("scoreValue");
+    const wrongList = document.getElementById("wrongList");
+
+    const UNIT_NAMES = {
+      1: { en: "Unit One", zh: "第一单元" },
+      2: { en: "Unit Two", zh: "第二单元" },
+      3: { en: "Unit Three", zh: "第三单元" },
+      4: { en: "Unit Four", zh: "第四单元" },
+      5: { en: "Unit Five", zh: "第五单元" },
+      6: { en: "Unit Six", zh: "第六单元" }
+    };
+
+    function showScreen(screen) {
+      frameHome.classList.remove("active");
+      frameTest.classList.remove("active");
+      frameResult.classList.remove("active");
+      screen.classList.add("active");
+    }
+
+    function normalizeAnswer(str) {
+      const s = str.trim().toLowerCase();
+      if (!s) return "";
+      return s.replace(/\s+/g, " ").replace(/ /g, "");
+    }
+
+    function getCurrentWord() {
+      return wordList[currentIndex];
+    }
+
+    function updateStats() {
+      const total = correctCount + wrongWords.length;
+      const rate = total === 0 ? 100 : Math.round((correctCount / total) * 100);
+      statCorrect.textContent = String(correctCount);
+      statWrong.textContent = String(wrongWords.length);
+      statRate.textContent = String(rate);
+    }
+
+    function renderQuestion() {
+      const word = getCurrentWord();
+      chineseText.textContent = word.zh;
+      resultText.textContent = "";
+      resultText.className = "result";
+      answerInput.value = "";
+      answerInput.focus();
+      updateStats();
+    }
+
+    function startUnit(unit) {
+      currentUnit = unit;
+      wordList = (VOCAB[unit] || []).slice();
+      currentIndex = 0;
+      correctCount = 0;
+      wrongWords = [];
+      const names = UNIT_NAMES[unit] || { en: "Unit " + unit, zh: "第" + unit + "单元" };
+      testUnitEn.textContent = names.en;
+      testUnitZh.textContent = names.zh + "单元测试";
+      if (!wordList.length) {
+        alert("该单元暂时没有单词数据。");
+        return;
+      }
+      showScreen(frameTest);
+      renderQuestion();
+    }
+
+    function recordAnswer(correct) {
+      const word = getCurrentWord();
+      if (correct) {
+        correctCount += 1;
+      } else {
+        wrongWords.push(word);
+      }
+    }
+
+    function handleConfirm(skip) {
+      const word = getCurrentWord();
+      const total = wordList.length;
+
+      if (!skip) {
+        const user = normalizeAnswer(answerInput.value);
+        if (!user) {
+          resultText.textContent = "请输入单词！";
+          resultText.className = "result wrong";
+          return;
+        }
+        const correctForm = normalizeAnswer(word.en);
+        const ok = user === correctForm;
+        recordAnswer(ok);
+        updateStats();
+        resultText.className = "result " + (ok ? "correct" : "wrong");
+        resultText.textContent = ok ? "✅ 正确！" : "❌ 错误，正确答案：" + word.en;
+      } else {
+        recordAnswer(false);
+        updateStats();
+        resultText.className = "result wrong";
+        resultText.textContent = "❌ 错误，正确答案：" + word.en;
+      }
+
+      if (currentIndex + 1 >= total) {
+        setTimeout(showResult, 600);
+      } else {
+        currentIndex += 1;
+        setTimeout(renderQuestion, 600);
+      }
+    }
+
+    function showResult() {
+      const total = wordList.length;
+      const rate = total === 0 ? 0 : correctCount / total;
+      const score = Math.round(rate * 100);
+      const names = UNIT_NAMES[currentUnit] || { en: "Unit " + currentUnit, zh: "第" + currentUnit + "单元" };
+
+      resultUnitEn.textContent = names.en;
+      resultUnitZh.textContent = names.zh + "单元测试 测试结果";
+      resCorrect.textContent = String(correctCount);
+      resWrong.textContent = String(wrongWords.length);
+      scoreValue.textContent = String(score) + "分";
+      wrongList.textContent = wrongWords.length
+        ? wrongWords.map(function (w) { return w.en; }).join(", ")
+        : "无";
+      wrongList.className = "result-wrong-words" + (wrongWords.length ? "" : " empty-msg");
+
+      showScreen(frameResult);
+    }
+
+    document.querySelectorAll(".unit-list li").forEach(function (li) {
+      li.addEventListener("click", function () {
+        const unit = parseInt(li.getAttribute("data-unit"), 10);
+        startUnit(unit);
+      });
+    });
+
+    document.getElementById("confirmBtn").addEventListener("click", function () {
+      handleConfirm(false);
+    });
+
+    answerInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        handleConfirm(false);
+      }
+    });
+
+    document.getElementById("homeBtn").addEventListener("click", function () {
+      showScreen(frameHome);
+    });
+  </script>
+</body>
+</html>
+
