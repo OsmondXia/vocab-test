@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Quantum Word Master — 按模块进行中英单词默写练习">
+  <meta name="theme-color" content="#3730a3">
+  <title>Quantum Word Master</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Nunito', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .app-card {
+        @apply bg-white border border-slate-200/80 shadow-xl rounded-2xl p-6 sm:p-8;
+      }
+      .app-btn {
+        @apply font-semibold py-2.5 px-4 rounded-xl shadow-sm border border-transparent transition-colors duration-200;
+      }
+      .app-btn-primary {
+        @apply app-btn bg-indigo-600 text-white hover:bg-indigo-700;
+      }
+      .app-btn-danger {
+        @apply app-btn bg-rose-600 text-white hover:bg-rose-700;
+      }
+      .app-btn-success {
+        @apply app-btn bg-emerald-600 text-white hover:bg-emerald-700;
+      }
+      .app-btn-ghost {
+        @apply app-btn bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200;
+      }
+      .input-glow-ok {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35);
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-950 via-indigo-900 to-violet-900 font-sans text-slate-800">
+
+  <div id="module-page" class="app-card max-w-lg w-full">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-center text-indigo-900 mb-2 tracking-tight">
+      <i class="fa fa-book mr-2" aria-hidden="true"></i>Quantum Word Master
+    </h1>
+    <p class="text-center text-slate-600 mb-6 text-sm sm:text-base">选择模块开始默写，或复习本模块错题。</p>
+
+    <label class="flex items-center justify-center gap-2 mb-4 cursor-pointer select-none text-sm text-slate-700">
+      <input type="checkbox" id="shuffle-toggle" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+      <span>随机打乱题目顺序</span>
+    </label>
+
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+      <button type="button" onclick="goToTest(1)" class="app-btn-primary" aria-label="开始模块 1">Module 1</button>
+      <button type="button" onclick="goToTest(2)" class="app-btn-primary" aria-label="开始模块 2">Module 2</button>
+      <button type="button" onclick="goToTest(3)" class="app-btn-primary" aria-label="开始模块 3">Module 3</button>
+      <button type="button" onclick="goToTest(4)" class="app-btn-primary" aria-label="开始模块 4">Module 4</button>
+      <button type="button" onclick="goToTest(5)" class="app-btn-primary" aria-label="开始模块 5">Module 5</button>
+      <button type="button" onclick="goToTest(6)" class="app-btn-primary" aria-label="开始模块 6">Module 6</button>
+      <button type="button" onclick="goToTest(7)" class="app-btn-primary" aria-label="开始模块 7">Module 7</button>
+      <button type="button" onclick="goToTest(8)" class="app-btn-primary" aria-label="开始模块 8">Module 8</button>
+      <button type="button" onclick="goToTest(9)" class="app-btn-primary" aria-label="开始模块 9">Module 9</button>
+      <button type="button" onclick="goToTest(10)" class="app-btn-primary" aria-label="开始模块 10">Module 10</button>
+    </div>
+
+    <p class="text-xs text-slate-500 text-center mb-2 font-medium uppercase tracking-wide">错题复习</p>
+    <div class="grid grid-cols-5 gap-2" id="wrong-review-grid" aria-label="各模块错题练习入口"></div>
+  </div>
+
+  <div id="test-page" class="app-card max-w-lg w-full hidden">
+    <h2 class="text-xl sm:text-2xl font-extrabold text-center text-indigo-900 mb-1" id="module-title">Module X</h2>
+    <p class="text-center text-sm text-slate-500 mb-4" id="progress-text" aria-live="polite"></p>
+    <div class="h-2 bg-slate-100 rounded-full overflow-hidden mb-6" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="progress-wrap" hidden>
+      <div id="progress-bar" class="h-full bg-indigo-500 transition-all duration-300 rounded-full" style="width: 0%"></div>
+    </div>
+
+    <div id="test-empty-notice" class="hidden text-center py-6 text-slate-600">
+      <p class="mb-4">该模块暂无单词数据。</p>
+      <button type="button" class="app-btn-ghost w-full" id="empty-back-btn" aria-label="返回模块选择">返回选模块</button>
+    </div>
+
+    <div id="test-active">
+      <div class="mb-5">
+        <p class="text-base sm:text-lg text-center font-medium text-slate-800 mb-3 leading-relaxed" id="chinese-trans"></p>
+        <button type="button" id="audio-btn" class="app-btn-primary w-full" aria-label="播放英文发音">
+          <i class="fa fa-volume-up mr-2" aria-hidden="true"></i>播放发音
+        </button>
+      </div>
+
+      <div class="mb-5">
+        <label for="word-input" class="sr-only">输入英文</label>
+        <input
+          type="text"
+          id="word-input"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          placeholder="请输入对应的英文…"
+          class="w-full p-3.5 text-base border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+        >
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button type="button" id="confirm-btn" class="app-btn-success flex-1" aria-label="确认答案">确认</button>
+        <button type="button" id="exit-btn" class="app-btn-danger flex-1" aria-label="退出练习返回选模块">退出</button>
+      </div>
+
+      <div class="mt-5 text-center text-lg font-bold min-h-[1.75rem]" id="result" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div id="summary-page" class="app-card max-w-lg w-full hidden">
+    <h2 class="text-xl font-extrabold text-center text-indigo-900 mb-4">本模块完成</h2>
+    <p class="text-center text-slate-700 mb-2" id="summary-score"></p>
+    <p class="text-center text-sm text-slate-500 mb-6" id="summary-wrong-hint"></p>
+    <div class="flex flex-col gap-3">
+      <button type="button" id="summary-retry-btn" class="app-btn-primary w-full" aria-label="再练一次本模块">再练一次本模块</button>
+      <button type="button" id="summary-wrong-btn" class="app-btn-ghost w-full hidden" aria-label="练习本模块错题">练习本模块错题</button>
+      <button type="button" id="summary-home-btn" class="app-btn-ghost w-full" aria-label="返回模块列表">返回选模块</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'qwm_wrong_v1';
+
+    const moduleWords = {
+      1: [
+        { english: "song", chinese: "歌曲" },
+        { english: "come on", chinese: "加油；快点" },
+        { english: "team", chinese: "球队，运动队" }
+      ],
+      2: [
+        { english: "meat", chinese: "肉" },
+        { english: "noodles", chinese: "（常复）面条" },
+        { english: "rice", chinese: "米饭" },
+        { english: "sweets", chinese: "（常复）糖果" },
+        { english: "children", chinese: "（child 的复数）孩子们" },
+        { english: "ginger", chinese: "姜" },
+        { english: "nice", chinese: "好的" },
+        { english: "onion", chinese: "洋葱" },
+        { english: "ice cream", chinese: "冰淇淋" }
+      ],
+      3: [
+        { english: "banana", chinese: "香蕉" },
+        { english: "apple", chinese: "苹果" },
+        { english: "milk", chinese: "奶，牛奶" },
+        { english: "orange", chinese: "柑橘，橙" },
+        { english: "fruit", chinese: "水果" },
+        { english: "milkshake", chinese: "奶昔" },
+        { english: "Here you are.", chinese: "给你" },
+        { english: "everything", chinese: "每件事，所有事物" },
+        { english: "tomato", chinese: "番茄，西红柿" },
+        { english: "really", chinese: "很，非常" },
+        { english: "their", chinese: "他/她/它们的" },
+        { english: "favourite", chinese: "最喜欢的事物" }
+      ],
+      4: [
+        { english: "T-shirt", chinese: "T恤衫" },
+        { english: "dress", chinese: "连衣裙" },
+        { english: "too", chinese: "太……" },
+        { english: "one", chinese: "一个" },
+        { english: "doesn't", chinese: "= does not 不" },
+        { english: "trousers", chinese: "裤子" },
+        { english: "party", chinese: "聚会" },
+        { english: "here's", chinese: "= here is 这是" }
+      ],
+      5: [
+        { english: "get up", chinese: "起床" },
+        { english: "poster", chinese: "海报，招贴画" },
+        { english: "go to school", chinese: "去上学" },
+        { english: "have", chinese: "吃，喝" },
+        { english: "lunch", chinese: "午餐" },
+        { english: "have lunch", chinese: "吃午餐" },
+        { english: "home", chinese: "家" },
+        { english: "go home", chinese: "回家" },
+        { english: "watch", chinese: "观看" },
+        { english: "TV", chinese: "电视；电视机" },
+        { english: "watch TV", chinese: "看电视" }
+      ],
+      6: [
+        { english: "on", chinese: "在……的时候" },
+        { english: "Sunday", chinese: "星期日" },
+        { english: "park", chinese: "公园" },
+        { english: "great", chinese: "太好了，好极了" },
+        { english: "goal", chinese: "进球，得分" },
+        { english: "hooray", chinese: "好哇（表示激动与高兴的呼喊声）" },
+        { english: "live", chinese: "居住" },
+        { english: "moon", chinese: "月亮" },
+        { english: "sky", chinese: "天，天空" },
+        { english: "city", chinese: "城市" }
+      ],
+      7: [
+        { english: "how", chinese: "怎样，如何" },
+        { english: "train", chinese: "火车" },
+        { english: "chug", chinese: "（发动机）发出咔嚓声" },
+        { english: "bus", chinese: "公共汽车" },
+        { english: "beep", chinese: "（汽车喇叭）嘟嘟声" },
+        { english: "by", chinese: "乘，坐（交通工具）" },
+        { english: "walk", chinese: "步行" },
+        { english: "How about…?", chinese: "……怎么样？" },
+        { english: "goes", chinese: "（go 的第三人称单数形式）去" },
+        { english: "work", chinese: "工作地点；工作" },
+        { english: "go to work", chinese: "去上班" },
+        { english: "bike", chinese: "自行车" },
+        { english: "with", chinese: "与……在一起；同；跟；和" },
+        { english: "run", chinese: "跑，奔跑" },
+        { english: "holiday", chinese: "假期" },
+        { english: "on holiday", chinese: "度假" },
+        { english: "then", chinese: "然后" },
+        { english: "ship", chinese: "轮船" },
+        { english: "plane", chinese: "飞机" },
+        { english: "love", chinese: "喜爱" }
+      ],
+      8: [
+        { english: "watches", chinese: "（watch 的第三人称单数形式）观看" },
+        { english: "weekend", chinese: "周末" },
+        { english: "read", chinese: "阅读" },
+        { english: "come", chinese: "来" },
+        { english: "play", chinese: "演奏（乐器）" },
+        { english: "piano", chinese: "钢琴" },
+        { english: "music", chinese: "音乐" },
+        { english: "listen", chinese: "听" },
+        { english: "listen to…", chinese: "听……" },
+        { english: "CD", chinese: "激光唱片" },
+        { english: "drum", chinese: "鼓" },
+        { english: "skating", chinese: "滑冰" },
+        { english: "go skating", chinese: "去滑冰" },
+        { english: "warm", chinese: "温暖的" },
+        { english: "wear", chinese: "穿，戴" },
+        { english: "jacket", chinese: "夹克衫，短上衣" },
+        { english: "sunglasses", chinese: "太阳镜" },
+        { english: "cool", chinese: "凉爽的；酷的" },
+        { english: "sweater", chinese: "毛线衫" },
+        { english: "glove", chinese: "手套" },
+        { english: "cold", chinese: "寒冷的" },
+        { english: "coat", chinese: "外套，大衣" }
+      ],
+      9: [
+        { english: "winter", chinese: "冬天" },
+        { english: "fly", chinese: "放飞（风筝）；飞" },
+        { english: "in", chinese: "在……期间，在……时候" },
+        { english: "spring", chinese: "春天" },
+        { english: "summer", chinese: "夏天" },
+        { english: "autumn", chinese: "秋天" },
+        { english: "skating", chinese: "滑冰" },
+        { english: "go skating", chinese: "去滑冰" },
+        { english: "warm", chinese: "温暖的" },
+        { english: "wear", chinese: "穿，戴" },
+        { english: "jacket", chinese: "夹克衫，短上衣" },
+        { english: "sunglasses", chinese: "太阳镜" },
+        { english: "cool", chinese: "凉爽的；酷的" },
+        { english: "sweater", chinese: "毛线衫" },
+        { english: "glove", chinese: "手套" },
+        { english: "cold", chinese: "寒冷的" },
+        { english: "coat", chinese: "外套，大衣" }
+      ],
+      10: [
+        { english: "year", chinese: "年，年份" },
+        { english: "Happy New Year!", chinese: "新年快乐！" },
+        { english: "come in", chinese: "进来" },
+        { english: "present", chinese: "礼物" },
+        { english: "dumpling", chinese: "水饺" },
+        { english: "eat", chinese: "吃" },
+        { english: "Chinese", chinese: "中国的" },
+        { english: "hair", chinese: "头发" },
+        { english: "firecracker", chinese: "鞭炮，爆竹" },
+        { english: "have", chinese: "有" },
+        { english: "wish", chinese: "祝，祝愿" },
+        { english: "Christmas", chinese: "圣诞节" },
+        { english: "dinner", chinese: "正餐，主餐" }
+      ]
+    };
+
+    let currentModule = null;
+    let currentIndex = 0;
+    let correctCount = 0;
+    let words = [];
+    let wordCount = 0;
+    let awaitingNext = false;
+    let sessionWrongs = [];
+    let isReviewMode = false;
+
+    function normalizeAnswer(s) {
+      if (s == null || s === '') return '';
+      let t = String(s).normalize('NFKC').toLowerCase();
+      t = t.replace(/[\u2018\u2019\u201B\u2032\u2035\u0060\u00B4]/g, "'");
+      t = t.replace(/[\u201C\u201D\u201E\u201F]/g, '"');
+      t = t.replace(/\u2026|…/g, '...');
+      t = t.replace(/\s+/g, ' ').trim();
+      t = t.replace(/\.+$/u, '');
+      return t;
+    }
+
+    function answersMatch(a, b) {
+      return normalizeAnswer(a) === normalizeAnswer(b);
+    }
+
+    function shuffleArray(arr) {
+      const out = arr.slice();
+      for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+      }
+      return out;
+    }
+
+    function loadWrongMap() {
+      try {
+        return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
+      } catch {
+        return {};
+      }
+    }
+
+    function saveWrongMap(map) {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    }
+
+    function mergeWrongsIntoStorage(moduleNum, items) {
+      if (!items.length) return;
+      const map = loadWrongMap();
+      const key = String(moduleNum);
+      const existing = map[key] || [];
+      const merged = existing.map((w) => ({ english: w.english, chinese: w.chinese }));
+      for (const w of items) {
+        const ne = normalizeAnswer(w.english);
+        if (!merged.some((m) => normalizeAnswer(m.english) === ne)) {
+          merged.push({ english: w.english, chinese: w.chinese });
+        }
+      }
+      map[key] = merged;
+      saveWrongMap(map);
+    }
+
+    function getWrongCountForModule(moduleNum) {
+      const map = loadWrongMap();
+      return (map[String(moduleNum)] || []).length;
+    }
+
+    function renderWrongReviewButtons() {
+      const grid = document.getElementById('wrong-review-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      for (let m = 1; m <= 10; m++) {
+        const n = getWrongCountForModule(m);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = String(m);
+        btn.className = 'app-btn text-sm py-2 ' + (n > 0 ? 'app-btn-ghost border-indigo-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed');
+        btn.disabled = n === 0;
+        btn.setAttribute('aria-label', n > 0 ? `复习模块 ${m} 的 ${n} 道错题` : `模块 ${m} 暂无错题`);
+        if (n > 0) {
+          btn.onclick = () => goToTest(m, { reviewOnly: true });
+        }
+        grid.appendChild(btn);
+      }
+    }
+
+    function showView(name) {
+      const modulePage = document.getElementById('module-page');
+      const testPage = document.getElementById('test-page');
+      const summaryPage = document.getElementById('summary-page');
+      [modulePage, testPage, summaryPage].forEach((el) => el.classList.add('hidden'));
+      if (name === 'module') modulePage.classList.remove('hidden');
+      if (name === 'test') testPage.classList.remove('hidden');
+      if (name === 'summary') summaryPage.classList.remove('hidden');
+    }
+
+    function stopSpeech() {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    }
+
+    function resetTestUi() {
+      awaitingNext = false;
+      const confirmBtn = document.getElementById('confirm-btn');
+      confirmBtn.textContent = '确认';
+      confirmBtn.className = 'app-btn-success flex-1';
+      document.getElementById('word-input').disabled = false;
+      const res = document.getElementById('result');
+      res.textContent = '';
+      res.className = 'mt-5 text-center text-lg font-bold min-h-[1.75rem] text-slate-800';
+      const inp = document.getElementById('word-input');
+      inp.classList.remove('input-glow-ok', 'border-emerald-500', 'border-rose-500');
+      inp.classList.add('border-slate-200');
+    }
+
+    function goToTest(moduleNum, options) {
+      const reviewOnly = options && options.reviewOnly;
+      stopSpeech();
+
+      if (reviewOnly) {
+        const map = loadWrongMap();
+        const list = map[String(moduleNum)] || [];
+        if (!list.length) {
+          alert('该模块暂无保存的错题。');
+          return;
+        }
+        isReviewMode = true;
+        currentModule = moduleNum;
+        const shuf = document.getElementById('shuffle-toggle').checked;
+        words = shuf ? shuffleArray(list.map((w) => ({ english: w.english, chinese: w.chinese }))) : list.map((w) => ({ english: w.english, chinese: w.chinese }));
+      } else {
+        isReviewMode = false;
+        currentModule = moduleNum;
+        const base = moduleWords[moduleNum] || [];
+        const shuf = document.getElementById('shuffle-toggle').checked;
+        words = shuf ? shuffleArray(base.slice()) : base.slice();
+      }
+
+      wordCount = words.length;
+      currentIndex = 0;
+      correctCount = 0;
+      sessionWrongs = [];
+
+      showView('test');
+      document.getElementById('module-title').textContent = isReviewMode
+        ? `Module ${moduleNum} · 错题复习`
+        : `Module ${moduleNum}`;
+
+      const testEmpty = document.getElementById('test-empty-notice');
+      const testActive = document.getElementById('test-active');
+      const progressWrap = document.getElementById('progress-wrap');
+
+      if (!wordCount) {
+        testEmpty.classList.remove('hidden');
+        testActive.classList.add('hidden');
+        progressWrap.hidden = true;
+        document.getElementById('progress-text').textContent = '';
+        return;
+      }
+
+      testEmpty.classList.add('hidden');
+      testActive.classList.remove('hidden');
+      progressWrap.hidden = false;
+
+      setupAudioButton();
+      resetTestUi();
+      showCurrentWord();
+    }
+
+    function setupAudioButton() {
+      const audioBtn = document.getElementById('audio-btn');
+      const ok = !!window.speechSynthesis;
+      audioBtn.disabled = !ok;
+      audioBtn.classList.toggle('opacity-50', !ok);
+      if (!ok) audioBtn.setAttribute('title', '当前浏览器不支持语音合成');
+    }
+
+    function updateProgress() {
+      const el = document.getElementById('progress-text');
+      const bar = document.getElementById('progress-bar');
+      const wrap = document.getElementById('progress-wrap');
+      if (!wordCount) {
+        el.textContent = '';
+        wrap.hidden = true;
+        return;
+      }
+      const n = Math.min(currentIndex + 1, wordCount);
+      el.textContent = `第 ${n} / ${wordCount} 题`;
+      const pct = Math.round((currentIndex / wordCount) * 100);
+      bar.style.width = pct + '%';
+      wrap.setAttribute('aria-valuenow', String(pct));
+      wrap.setAttribute('aria-valuetext', `已完成 ${currentIndex} / ${wordCount} 题`);
+    }
+
+    function showCurrentWord() {
+      const chineseTrans = document.getElementById('chinese-trans');
+      const wordInput = document.getElementById('word-input');
+      const result = document.getElementById('result');
+
+      if (currentIndex < words.length) {
+        const currentWord = words[currentIndex];
+        chineseTrans.textContent = currentWord.chinese;
+        wordInput.value = '';
+        wordInput.classList.remove('input-glow-ok', 'border-emerald-500', 'border-rose-500');
+        wordInput.classList.add('border-slate-200');
+        result.textContent = '';
+        result.className = 'mt-5 text-center text-lg font-bold min-h-[1.75rem] text-slate-800';
+        awaitingNext = false;
+        document.getElementById('confirm-btn').textContent = '确认';
+        document.getElementById('confirm-btn').className = 'app-btn-success flex-1';
+        wordInput.disabled = false;
+        updateProgress();
+        requestAnimationFrame(() => wordInput.focus());
+      }
+    }
+
+    function advanceOrFinish() {
+      currentIndex++;
+      resetTestUi();
+      if (currentIndex >= words.length) {
+        if (!isReviewMode && sessionWrongs.length) {
+          mergeWrongsIntoStorage(currentModule, sessionWrongs);
+        }
+        showSummary();
+        return;
+      }
+      showCurrentWord();
+    }
+
+    function showSummary() {
+      stopSpeech();
+      showView('summary');
+      const total = wordCount;
+      const wrong = total - correctCount;
+      const pct = total ? Math.round((correctCount / total) * 100) : 0;
+      document.getElementById('summary-score').textContent =
+        `答对 ${correctCount} / ${total} 题（正确率 ${pct}%）`;
+      const hint = document.getElementById('summary-wrong-hint');
+      if (!isReviewMode && wrong > 0) {
+        hint.textContent = `本轮错题已保存，可在首页「错题复习」中继续练习。`;
+      } else if (isReviewMode) {
+        hint.textContent = '错题复习完成。可返回继续巩固其他模块。';
+      } else {
+        hint.textContent = '全部正确，继续保持！';
+      }
+
+      const wrongBtn = document.getElementById('summary-wrong-btn');
+      const hasStored = getWrongCountForModule(currentModule) > 0;
+      wrongBtn.classList.toggle('hidden', !hasStored);
+      renderWrongReviewButtons();
+    }
+
+    function returnToModules() {
+      stopSpeech();
+      currentModule = null;
+      currentIndex = 0;
+      words = [];
+      wordCount = 0;
+      correctCount = 0;
+      awaitingNext = false;
+      sessionWrongs = [];
+      isReviewMode = false;
+      showView('module');
+      renderWrongReviewButtons();
+      document.getElementById('result').textContent = '';
+    }
+
+    function handleConfirmOrNext() {
+      if (currentIndex >= words.length || !words.length) return;
+
+      const wordInput = document.getElementById('word-input');
+      const resultEl = document.getElementById('result');
+      const confirmBtn = document.getElementById('confirm-btn');
+      const currentWord = words[currentIndex];
+
+      if (awaitingNext) {
+        advanceOrFinish();
+        return;
+      }
+
+      const userInput = wordInput.value.trim();
+      const isCorrect = answersMatch(userInput, currentWord.english);
+
+      if (isCorrect) {
+        correctCount++;
+        wordInput.value = currentWord.english;
+        wordInput.classList.remove('border-slate-200', 'border-rose-500');
+        wordInput.classList.add('input-glow-ok', 'border-emerald-500');
+        resultEl.textContent = '正确，真棒！';
+        resultEl.className = 'mt-5 text-center text-lg font-bold min-h-[1.75rem] text-emerald-700';
+        wordInput.disabled = true;
+        awaitingNext = true;
+        confirmBtn.textContent = '下一题';
+        confirmBtn.className = 'app-btn-primary flex-1';
+      } else {
+        wordInput.value = currentWord.english;
+        wordInput.classList.remove('border-slate-200', 'border-emerald-500', 'input-glow-ok');
+        wordInput.classList.add('border-rose-500');
+        resultEl.textContent = '再记一记：上方为正确答案。';
+        resultEl.className = 'mt-5 text-center text-lg font-bold min-h-[1.75rem] text-rose-700';
+        const already = sessionWrongs.some((w) => answersMatch(w.english, currentWord.english));
+        if (!already) {
+          sessionWrongs.push({ english: currentWord.english, chinese: currentWord.chinese });
+        }
+        wordInput.disabled = true;
+        awaitingNext = true;
+        confirmBtn.textContent = '下一题';
+        confirmBtn.className = 'app-btn-primary flex-1';
+      }
+    }
+
+    document.getElementById('audio-btn').addEventListener('click', function () {
+      if (currentIndex >= words.length || !words.length) return;
+      const wordToSpeak = words[currentIndex].english;
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(wordToSpeak);
+        u.lang = 'en-US';
+        u.rate = 0.92;
+        window.speechSynthesis.speak(u);
+      }
+    });
+
+    document.getElementById('confirm-btn').addEventListener('click', handleConfirmOrNext);
+
+    document.getElementById('word-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleConfirmOrNext();
+      }
+    });
+
+    document.getElementById('exit-btn').addEventListener('click', returnToModules);
+
+    document.getElementById('empty-back-btn').addEventListener('click', returnToModules);
+
+    document.getElementById('summary-home-btn').addEventListener('click', returnToModules);
+
+    document.getElementById('summary-retry-btn').addEventListener('click', function () {
+      if (currentModule != null) {
+        goToTest(currentModule, { reviewOnly: isReviewMode });
+      }
+    });
+
+    document.getElementById('summary-wrong-btn').addEventListener('click', function () {
+      if (currentModule != null) {
+        goToTest(currentModule, { reviewOnly: true });
+      }
+    });
+
+    renderWrongReviewButtons();
+  </script>
+</body>
+</html>
